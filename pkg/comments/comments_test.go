@@ -1,6 +1,8 @@
 package comments
 
 import (
+	"path/filepath"
+	"strings"
 	"testing"
 )
 
@@ -14,8 +16,33 @@ func TestJSFiles(t *testing.T) {
 	}
 
 	if len(comments) != 3 {
-		t.Fail()
+		t.Fatalf("expected 3 JavaScript comments, got %d from files %v", len(comments), commentFilePaths(comments))
 	}
+}
+
+func TestSearchFileIgnoresVendorPathsWithOSSeparators(t *testing.T) {
+	path := filepath.Join("node_modules", "index.js")
+	fixture := "// the comments in this file should be ignored\n"
+
+	var comments Comments
+	err := SearchFile(path, strings.NewReader(fixture), func(comment *Comment) {
+		comments = append(comments, comment)
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if len(comments) != 0 {
+		t.Fatalf("expected vendor path to be ignored, got %d comments", len(comments))
+	}
+}
+
+func commentFilePaths(comments Comments) []string {
+	paths := make([]string, 0, len(comments))
+	for _, comment := range comments {
+		paths = append(paths, comment.FilePath)
+	}
+	return paths
 }
 
 func TestLispFiles(t *testing.T) {

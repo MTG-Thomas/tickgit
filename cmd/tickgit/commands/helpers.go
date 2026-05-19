@@ -20,3 +20,21 @@ func validateDir(dir string) {
 		handleError(fmt.Errorf("%s is not a git repository", abs), nil)
 	}
 }
+
+func resolveSearchDir(cwd string, args []string) (string, error) {
+	if len(args) == 0 {
+		return cwd, nil
+	}
+
+	arg := args[0]
+	if !filepath.IsAbs(arg) {
+		arg = filepath.Join(cwd, arg)
+	}
+
+	arg, err := filepath.Abs(arg)
+	if err != nil {
+		return "", err
+	}
+
+	return filepath.Rel(cwd, arg)
+}
