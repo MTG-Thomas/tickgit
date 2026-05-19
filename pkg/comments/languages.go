@@ -60,14 +60,13 @@ var LanguageParseOptions map[Language]*lege.ParseOptions = map[Language]*lege.Pa
 	"Swift":        CStyleCommentOptions,
 	"TypeScript":   CStyleCommentOptions,
 	"Visual Basic": {Boundaries: []lege.Boundary{{Start: "'", End: "\n"}}},
-	// TODO Currently, the underlying pkg that does the parsing/plucking (lege) doesn't properly support precedance
+	// Track lege precedence limitations in https://github.com/MTG-Thomas/tickgit/issues/9.
 	// so lines beginning with /// or //! will be picked up by this start // and include a / or ! preceding the comment
 	"Kotlin": CStyleCommentOptions,
 	"Rust":   {Boundaries: []lege.Boundary{{Start: "///", End: "\n"}, {Start: "//!", End: "\n"}, {Start: "//", End: "\n"}}},
 
-	// TODO unfortunately, lege does't seem to handle the below boundaries very well, similar issue as to above I believe. Something with precendance?
+	// Track lege boundary limitations in https://github.com/MTG-Thomas/tickgit/issues/9.
 	// Multi-line comments are not getting picked up...
 	"Elixir": HashStyleCommentOptions,
 	"Julia":  {Boundaries: []lege.Boundary{{Start: "#=", End: "=#"}, {Start: "#", End: "\n"}}},
 }
-

@@ -30,8 +30,8 @@ func (t *ToDo) TimeAgo() string {
 
 // NewToDo produces a pointer to a ToDo from a comment
 func NewToDo(comment comments.Comment) *ToDo {
-	// FIXME this should be configurable and probably NOT hardcoded here
-	// in fact, this list might be too expansive for a sensible default
+	// Track configurable match phrases in https://github.com/MTG-Thomas/tickgit/issues/3.
+	// This list might be too expansive for a sensible default.
 	startingMatchPhrases := []string{"TODO", "FIXME", "OPTIMIZE", "HACK", "XXX", "WTF", "LEGACY"}
 	var matchPhrases []string
 	for _, phrase := range startingMatchPhrases {
@@ -120,7 +120,7 @@ func (t *ToDos) FindBlame(ctx context.Context, dir string) error {
 			Lines:     lines,
 		})
 		if err != nil {
-			// TODO (patrickdevivo) report this error
+			// Track blame error reporting in https://github.com/MTG-Thomas/tickgit/issues/7.
 			continue
 		}
 		for line, blame := range blames {

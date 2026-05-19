@@ -44,7 +44,7 @@ func SearchFile(filePath string, reader io.Reader, cb func(*Comment)) error {
 
 	lang := Language(enry.GetLanguage(filepath.Base(filePath), preview))
 	options, ok := LanguageParseOptions[lang]
-	if !ok { // TODO provide a default parse option for when we don't know how to handle a language? I.e. default to CStyle comments say
+	if !ok { // Track unknown-language fallback behavior in https://github.com/MTG-Thomas/tickgit/issues/5.
 		return nil
 	}
 	commentParser, err := lege.NewParser(options)
@@ -74,7 +74,7 @@ func SearchDir(dirPath string, cb func(comment *Comment)) error {
 				return err
 			}
 			pathComponents := strings.Split(localPath, string(os.PathSeparator))
-			// let's ignore git directories TODO: figure out a more generic way to set ignores
+			// Track configurable ignore rules in https://github.com/MTG-Thomas/tickgit/issues/4.
 			matched, err := filepath.Match(".git", pathComponents[0])
 			if err != nil {
 				return err
