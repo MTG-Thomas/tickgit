@@ -1,9 +1,7 @@
-[![GoDoc](https://godoc.org/github.com/augmentable-dev/tickgit?status.svg)](https://godoc.org/github.com/augmentable-dev/tickgit)
-[![BuildStatus](https://github.com/augmentable-dev/tickgit/workflows/tests/badge.svg)](https://github.com/augmentable-dev/tickgit/actions?workflow=tests)
-[![Go Report Card](https://goreportcard.com/badge/github.com/augmentable-dev/tickgit)](https://goreportcard.com/report/github.com/augmentable-dev/tickgit)
-![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/augmentable-dev/tickgit)
-[![Coverage](http://gocover.io/_badge/github.com/augmentable-dev/tickgit)](http://gocover.io/github.com/augmentable-dev/tickgit)
-[![TODOs](https://badgen.net/https/api.tickgit.com/badgen/github.com/augmentable-dev/tickgit)](https://www.tickgit.com/browse?repo=github.com/augmentable-dev/tickgit)
+[![tests](https://github.com/MTG-Thomas/tickgit/actions/workflows/test.yml/badge.svg)](https://github.com/MTG-Thomas/tickgit/actions/workflows/test.yml)
+[![Go Report Card](https://goreportcard.com/badge/github.com/MTG-Thomas/tickgit)](https://goreportcard.com/report/github.com/MTG-Thomas/tickgit)
+[![release](https://img.shields.io/github/v/release/MTG-Thomas/tickgit)](https://github.com/MTG-Thomas/tickgit/releases)
+[![license](https://img.shields.io/github/license/MTG-Thomas/tickgit)](LICENSE)
 
 ## tickgit 🎟️
 
@@ -50,12 +48,9 @@ Check out [an example](https://www.tickgit.com/browse?repo=github.com/kubernetes
 
 ### Installation
 
-#### Homebrew
+#### GitHub Releases
 
-```
-brew tap augmentable-dev/tickgit
-brew install tickgit
-```
+Download prebuilt binaries from the [latest release](https://github.com/MTG-Thomas/tickgit/releases/latest).
 
 ### Usage
 
@@ -63,4 +58,4 @@ The most up to date usage will be the output of `tickgit --help`.
 
 ### API
 
-To find information about using the tickgit API, see [this file](https://github.com/augmentable-dev/tickgit/blob/master/docs/API.md).
+To find information about using the tickgit API, see [this file](https://github.com/MTG-Thomas/tickgit/blob/main/docs/API.md).
