@@ -6,7 +6,7 @@ import (
 )
 
 func TestResolveSearchDirAcceptsCurrentDirectory(t *testing.T) {
-	cwd := filepath.Clean("C:/work/tickgit")
+	cwd := t.TempDir()
 
 	dir, err := resolveSearchDir(cwd, []string{"."})
 	if err != nil {
@@ -19,7 +19,7 @@ func TestResolveSearchDirAcceptsCurrentDirectory(t *testing.T) {
 }
 
 func TestResolveSearchDirMakesAbsoluteArgRelativeToCwd(t *testing.T) {
-	cwd := filepath.Clean("C:/work/tickgit")
+	cwd := t.TempDir()
 	arg := filepath.Join(cwd, "pkg")
 
 	dir, err := resolveSearchDir(cwd, []string{arg})
