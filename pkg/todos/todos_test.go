@@ -3,8 +3,8 @@ package todos
 import (
 	"testing"
 
+	"github.com/MTG-Thomas/tickgit/pkg/comments"
 	"github.com/augmentable-dev/lege"
-	"github.com/augmentable-dev/tickgit/pkg/comments"
 )
 
 func TestNewToDoNil(t *testing.T) {
