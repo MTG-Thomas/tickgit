@@ -27,8 +27,7 @@ func WriteTodos(todos ToDos, writer io.Writer) error {
 		return err
 	}
 
-	// replace the phrase in the todo string with a "highlighted" version for console output
-	// TODO eventually make this configurable, for NO_COLOR output (or customization of color?)
+	// Track configurable color output in https://github.com/MTG-Thomas/tickgit/issues/8.
 	for _, todo := range todos {
 		todo.String = strings.Replace(todo.String, todo.Phrase, "\u001b[33m"+todo.Phrase+"\u001b[0m", 1)
 	}

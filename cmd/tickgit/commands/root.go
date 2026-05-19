@@ -7,7 +7,7 @@ import (
 	"github.com/briandowns/spinner"
 )
 
-// TODO clean this up
+// Track CLI error handling cleanup in https://github.com/MTG-Thomas/tickgit/issues/6.
 func handleError(err error, spinner *spinner.Spinner) {
 	if err != nil {
 		if spinner != nil {

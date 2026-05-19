@@ -68,8 +68,8 @@ func TestRustFiles(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	// TODO: break the different comment types out into separate files?
-	// once the issue with lege is worked out for handling the different comment types
+	// Track comment-type test organization and parser limits in
+	// https://github.com/MTG-Thomas/tickgit/issues/9.
 	if len(comments) != 21 {
 		t.Fail()
 	}
