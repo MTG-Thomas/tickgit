@@ -9,8 +9,8 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/augmentable-dev/tickgit/pkg/comments"
-	"github.com/augmentable-dev/tickgit/pkg/todos"
+	"github.com/MTG-Thomas/tickgit/pkg/comments"
+	"github.com/MTG-Thomas/tickgit/pkg/todos"
 	"github.com/briandowns/spinner"
 	"github.com/spf13/cobra"
 )

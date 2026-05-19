@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/augmentable-dev/tickgit/cmd/tickgit/commands"
+	"github.com/MTG-Thomas/tickgit/cmd/tickgit/commands"
 )
 
 func main() {

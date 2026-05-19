@@ -4,8 +4,8 @@ import (
 	"context"
 	"strings"
 
-	"github.com/augmentable-dev/tickgit/pkg/blame"
-	"github.com/augmentable-dev/tickgit/pkg/comments"
+	"github.com/MTG-Thomas/tickgit/pkg/blame"
+	"github.com/MTG-Thomas/tickgit/pkg/comments"
 	"github.com/dustin/go-humanize"
 )
 

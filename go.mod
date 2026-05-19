@@ -1,4 +1,4 @@
-module github.com/augmentable-dev/tickgit
+module github.com/MTG-Thomas/tickgit
 
 go 1.22
 
