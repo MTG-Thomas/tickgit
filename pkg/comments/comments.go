@@ -3,7 +3,6 @@ package comments
 import (
 	"bytes"
 	"io"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -26,11 +25,16 @@ type Comment struct {
 
 // SearchFile searches a file for comments. It infers the language
 func SearchFile(filePath string, reader io.Reader, cb func(*Comment)) error {
+	slashPath := filepath.ToSlash(filePath)
+	if enry.IsVendor(slashPath) {
+		return nil
+	}
+
 	// create a preview reader that reads in some of the file for enry to better identify the language
 	var buf bytes.Buffer
 	tee := io.TeeReader(reader, &buf)
 	previewReader := io.LimitReader(tee, 1000)
-	preview, err := ioutil.ReadAll(previewReader)
+	preview, err := io.ReadAll(previewReader)
 	if err != nil {
 		return err
 	}
@@ -39,9 +43,6 @@ func SearchFile(filePath string, reader io.Reader, cb func(*Comment)) error {
 	fullReader := io.MultiReader(strings.NewReader(buf.String()), reader)
 
 	lang := Language(enry.GetLanguage(filepath.Base(filePath), preview))
-	if enry.IsVendor(filePath) {
-		return nil
-	}
 	options, ok := LanguageParseOptions[lang]
 	if !ok { // TODO provide a default parse option for when we don't know how to handle a language? I.e. default to CStyle comments say
 		return nil
@@ -91,10 +92,13 @@ func SearchDir(dirPath string, cb func(comment *Comment)) error {
 					return err
 				}
 				err = SearchFile(localPath, f, cb)
+				closeErr := f.Close()
 				if err != nil {
 					return err
 				}
-				f.Close()
+				if closeErr != nil {
+					return closeErr
+				}
 			}
 			return nil
 		},

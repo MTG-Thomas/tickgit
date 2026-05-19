@@ -5,7 +5,6 @@ import (
 	"encoding/csv"
 	"fmt"
 	"os"
-	"path/filepath"
 	"sort"
 	"strconv"
 	"time"
@@ -37,11 +36,8 @@ var todosCmd = &cobra.Command{
 		cwd, err := os.Getwd()
 		handleError(err, s)
 
-		dir := cwd
-		if len(args) == 1 {
-			dir, err = filepath.Rel(cwd, args[0])
-			handleError(err, s)
-		}
+		dir, err := resolveSearchDir(cwd, args)
+		handleError(err, s)
 
 		validateDir(dir)
 
