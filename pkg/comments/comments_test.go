@@ -37,6 +37,28 @@ func TestSearchFileIgnoresVendorPathsWithOSSeparators(t *testing.T) {
 	}
 }
 
+func TestSearchFileTreatsMarkdownLinesAsComments(t *testing.T) {
+	fixture := "# Notes\n\n- TODO capture this work\n\nPlain paragraph\n"
+	var comments Comments
+
+	err := SearchFile("README.md", strings.NewReader(fixture), func(comment *Comment) {
+		comments = append(comments, comment)
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if len(comments) != 3 {
+		t.Fatalf("expected 3 Markdown content lines, got %d", len(comments))
+	}
+	if got, want := comments[1].String(), "- TODO capture this work"; got != want {
+		t.Fatalf("expected second content line %q, got %q", want, got)
+	}
+	if got, want := comments[1].StartLocation.Line, 3; got != want {
+		t.Fatalf("expected line %d, got %d", want, got)
+	}
+}
+
 func commentFilePaths(comments Comments) []string {
 	paths := make([]string, 0, len(comments))
 	for _, comment := range comments {
