@@ -1,0 +1,24 @@
+name: tickgit TODO guard
+
+on:
+  pull_request:
+  schedule:
+    - cron: "17 13 * * 1-5"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  todo-guard:
+    name: Detect new TODO comments
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v6
+
+      - name: Run tickgit TODO guard
+        uses: ./
+        with:
+          baseline-file: .github/tickgit-baseline.csv
+          fail-on-new: "true"
