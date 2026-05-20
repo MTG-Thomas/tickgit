@@ -56,6 +56,47 @@ Download prebuilt binaries from the [latest release](https://github.com/MTG-Thom
 
 The most up to date usage will be the output of `tickgit --help`.
 
+### GitHub Action
+
+This fork includes a read-only GitHub Action that compares current tickgit CSV
+output to a committed baseline. It is intended for scheduled and pull request
+checks that fail only when a repository introduces new latent-work comments.
+
+Create a baseline:
+
+```sh
+tickgit --csv-output > .github/tickgit-baseline.csv
+```
+
+Then add a workflow:
+
+```yaml
+name: tickgit TODO guard
+
+on:
+  pull_request:
+  schedule:
+    - cron: "17 13 * * 1-5"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  todo-guard:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: MTG-Thomas/tickgit@main
+        with:
+          baseline-file: .github/tickgit-baseline.csv
+          fail-on-new: "true"
+```
+
+The Action does not create issues, comments, commits, or other mutations. It
+builds tickgit from the pinned Action ref and exits with status 2 when new
+findings appear relative to the baseline.
+
 ### API
 
 To find information about using the tickgit API, see [this file](https://github.com/MTG-Thomas/tickgit/blob/main/docs/API.md).

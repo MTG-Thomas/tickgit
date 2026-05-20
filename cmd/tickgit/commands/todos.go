@@ -1,14 +1,19 @@
 package commands
 
 import (
+	"bytes"
 	"context"
 	"encoding/csv"
 	"fmt"
+	"io"
 	"os"
+	"path/filepath"
 	"sort"
 	"strconv"
+	"strings"
 	"time"
 
+	"github.com/MTG-Thomas/tickgit/pkg/baseline"
 	"github.com/MTG-Thomas/tickgit/pkg/comments"
 	"github.com/MTG-Thomas/tickgit/pkg/todos"
 	"github.com/briandowns/spinner"
@@ -16,9 +21,13 @@ import (
 )
 
 var csvOutput bool
+var baselineFile string
+var failOnNew bool
 
 func init() {
 	todosCmd.Flags().BoolVar(&csvOutput, "csv-output", false, "specify whether or not output should be in CSV format")
+	todosCmd.Flags().StringVar(&baselineFile, "baseline-file", "", "compare CSV output against a tickgit baseline file")
+	todosCmd.Flags().BoolVar(&failOnNew, "fail-on-new", false, "exit with status 2 when baseline comparison finds new TODOs")
 }
 
 var todosCmd = &cobra.Command{
@@ -64,38 +73,86 @@ var todosCmd = &cobra.Command{
 		s.Stop()
 
 		if csvOutput {
-			w := csv.NewWriter(os.Stdout)
-			err := w.Write([]string{
-				"text", "file_path", "start_line", "start_position", "end_line", "end_position", "author", "author_email", "author_sha", "author_time",
-			})
+			var buf bytes.Buffer
+			err := writeCSV(&buf, foundToDos)
 			handleError(err, s)
 
-			for _, todo := range foundToDos {
-				err := w.Write([]string{
-					todo.String,
-					todo.FilePath,
-					strconv.Itoa(todo.StartLocation.Line),
-					strconv.Itoa(todo.StartLocation.Pos),
-					strconv.Itoa(todo.EndLocation.Line),
-					strconv.Itoa(todo.EndLocation.Pos),
-					todo.Blame.Author.Name,
-					todo.Blame.Author.Email,
-					todo.Blame.SHA,
-					todo.Blame.Author.When.Format(time.RFC3339),
-				})
-				handleError(err, s)
-			}
-
-			// Write any buffered data to the underlying writer (standard output).
-			w.Flush()
-
-			err = w.Error()
+			_, err = os.Stdout.Write(buf.Bytes())
 			handleError(err, s)
 
+			handleBaselineComparison(baselineFile, failOnNew, buf.Bytes())
 		} else {
 			err := todos.WriteTodos(foundToDos, os.Stdout)
 			handleError(err, s)
 		}
 
 	},
+}
+
+func writeCSV(w io.Writer, foundToDos todos.ToDos) error {
+	csvWriter := csv.NewWriter(w)
+	err := csvWriter.Write([]string{
+		"text", "file_path", "start_line", "start_position", "end_line", "end_position", "author", "author_email", "author_sha", "author_time",
+	})
+	if err != nil {
+		return err
+	}
+
+	for _, todo := range foundToDos {
+		record := []string{
+			todo.String,
+			normalizeCSVPath(todo.FilePath),
+			strconv.Itoa(todo.StartLocation.Line),
+			strconv.Itoa(todo.StartLocation.Pos),
+			strconv.Itoa(todo.EndLocation.Line),
+			strconv.Itoa(todo.EndLocation.Pos),
+			"", "", "", "",
+		}
+		if todo.Blame != nil {
+			record[6] = todo.Blame.Author.Name
+			record[7] = todo.Blame.Author.Email
+			record[8] = todo.Blame.SHA
+			record[9] = todo.Blame.Author.When.Format(time.RFC3339)
+		}
+		err := csvWriter.Write(record)
+		if err != nil {
+			return err
+		}
+	}
+
+	csvWriter.Flush()
+	return csvWriter.Error()
+}
+
+func normalizeCSVPath(path string) string {
+	return filepath.ToSlash(strings.ReplaceAll(path, "\\", string(filepath.Separator)))
+}
+
+func handleBaselineComparison(path string, shouldFail bool, currentCSV []byte) {
+	if path == "" {
+		return
+	}
+
+	baselineCSV, err := os.Open(path)
+	handleError(err, nil)
+	defer func() {
+		handleError(baselineCSV.Close(), nil)
+	}()
+
+	result, err := baseline.CompareCSV(baselineCSV, bytes.NewReader(currentCSV))
+	handleError(err, nil)
+
+	if len(result.New) == 0 {
+		fmt.Fprintln(os.Stderr, "tickgit baseline check: no new TODOs found")
+		return
+	}
+
+	fmt.Fprintf(os.Stderr, "tickgit baseline check: %d new TODO(s) found\n", len(result.New))
+	for _, finding := range result.New {
+		fmt.Fprintf(os.Stderr, "%s:%s: %s\n", finding.FilePath, finding.StartLine, finding.Text)
+	}
+
+	if shouldFail {
+		os.Exit(2)
+	}
 }

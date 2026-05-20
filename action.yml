@@ -1,0 +1,42 @@
+name: tickgit TODO guard
+description: Detect new TODO-style comments by comparing tickgit output to a committed baseline.
+inputs:
+  path:
+    description: Repository path to scan, relative to the workflow workspace.
+    required: false
+    default: "."
+  baseline-file:
+    description: Baseline CSV file, relative to the workflow workspace.
+    required: false
+    default: ".github/tickgit-baseline.csv"
+  fail-on-new:
+    description: Exit non-zero when current findings contain TODOs not present in the baseline.
+    required: false
+    default: "true"
+runs:
+  using: composite
+  steps:
+    - name: Set up Go
+      uses: actions/setup-go@v6
+      with:
+        go-version: stable
+        cache: false
+
+    - name: Build tickgit
+      shell: bash
+      run: |
+        set -euo pipefail
+        mkdir -p "$RUNNER_TEMP/tickgit-action"
+        cd "$GITHUB_ACTION_PATH"
+        go build -o "$RUNNER_TEMP/tickgit-action/tickgit" ./cmd/tickgit
+
+    - name: Run tickgit baseline check
+      shell: bash
+      run: |
+        set -euo pipefail
+        cd "$GITHUB_WORKSPACE"
+        args=("--csv-output" "--baseline-file" "${{ inputs.baseline-file }}")
+        if [[ "${{ inputs.fail-on-new }}" == "true" ]]; then
+          args+=("--fail-on-new")
+        fi
+        "$RUNNER_TEMP/tickgit-action/tickgit" "${args[@]}" "${{ inputs.path }}"
