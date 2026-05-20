@@ -40,7 +40,7 @@ Check out [an example](https://www.tickgit.com/browse?repo=github.com/kubernetes
 #### Coming Soon
 
 - [x] Blame - get a better sense of how old TODOs are, when they were introduced and by whom
-- [ ] Context - more visibility into the lines of code _around_ a TODO for greater context
+- [x] Context - use `--context-lines <n>` for visibility into the lines of code _around_ a TODO
 - [ ] More `TODO` type phrases to match, such as `FIXME`, `XXX`, `HACK`, or customized alternatives.
 - [ ] More configurability (e.g. custom ignore paths)
 - [ ] Markdown parsing

@@ -2,6 +2,8 @@ package todos
 
 import (
 	"context"
+	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/MTG-Thomas/tickgit/pkg/blame"
@@ -12,13 +14,20 @@ import (
 // ToDo represents a ToDo item
 type ToDo struct {
 	comments.Comment
-	String string
-	Phrase string
-	Blame  *blame.Blame
+	String  string
+	Phrase  string
+	Blame   *blame.Blame
+	Context []ContextLine
 }
 
 // ToDos represents a list of ToDo items
 type ToDos []*ToDo
+
+// ContextLine is one source line rendered around a finding.
+type ContextLine struct {
+	Line int
+	Text string
+}
 
 // TimeAgo returns a human readable string indicating the time since the todo was added
 func (t *ToDo) TimeAgo() string {
@@ -133,4 +142,56 @@ func (t *ToDos) FindBlame(ctx context.Context, dir string) error {
 		}
 	}
 	return nil
+}
+
+// FindContext sets source context lines around each todo.
+func (t ToDos) FindContext(dir string, contextLines int) error {
+	if contextLines <= 0 {
+		return nil
+	}
+
+	fileMap := make(map[string]ToDos)
+	for _, todo := range t {
+		fileMap[todo.FilePath] = append(fileMap[todo.FilePath], todo)
+	}
+
+	for filePath, todos := range fileMap {
+		lines, err := readFileLines(filepath.Join(dir, filePath))
+		if err != nil {
+			return err
+		}
+		for _, todo := range todos {
+			start := todo.StartLocation.Line - contextLines
+			if start < 1 {
+				start = 1
+			}
+			end := todo.EndLocation.Line + contextLines
+			if end > len(lines) {
+				end = len(lines)
+			}
+			todo.Context = make([]ContextLine, 0, end-start+1)
+			for line := start; line <= end; line++ {
+				todo.Context = append(todo.Context, ContextLine{
+					Line: line,
+					Text: lines[line-1],
+				})
+			}
+		}
+	}
+
+	return nil
+}
+
+func readFileLines(path string) ([]string, error) {
+	content, err := os.ReadFile(path)
+	if err != nil {
+		return nil, err
+	}
+
+	rawLines := strings.Split(strings.TrimSuffix(string(content), "\n"), "\n")
+	for i := range rawLines {
+		rawLines[i] = strings.TrimSuffix(rawLines[i], "\r")
+	}
+
+	return rawLines, nil
 }

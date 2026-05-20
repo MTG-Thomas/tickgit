@@ -10,6 +10,12 @@ const defaultTemplate = `
 {{- range $index, $todo := . }}
 {{ .String }}
   => {{ .Comment.FilePath }}:{{ .Comment.StartLocation.Line }}:{{ .Comment.StartLocation.Pos }}
+  {{- if .Context }}
+  => context:
+    {{- range .Context }}
+     {{ printf "%6d" .Line }} | {{ .Text }}
+    {{- end }}
+  {{- end }}
   {{- if .Blame }}
   => added {{ .TimeAgo }} by {{ .Blame.Author }} in {{ .Blame.SHA }}
   {{- end }}
