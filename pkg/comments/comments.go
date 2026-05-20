@@ -43,6 +43,10 @@ func SearchFile(filePath string, reader io.Reader, cb func(*Comment)) error {
 	fullReader := io.MultiReader(strings.NewReader(buf.String()), reader)
 
 	lang := Language(enry.GetLanguage(filepath.Base(filePath), preview))
+	if lang == "Markdown" {
+		return searchMarkdownFile(filePath, fullReader, cb)
+	}
+
 	options, ok := LanguageParseOptions[lang]
 	if !ok { // Track unknown-language fallback behavior in https://github.com/MTG-Thomas/tickgit/issues/5.
 		return nil
@@ -59,6 +63,31 @@ func SearchFile(filePath string, reader io.Reader, cb func(*Comment)) error {
 
 	for _, c := range collections {
 		comment := Comment{*c, filePath}
+		cb(&comment)
+	}
+
+	return nil
+}
+
+func searchMarkdownFile(filePath string, reader io.Reader, cb func(*Comment)) error {
+	content, err := io.ReadAll(reader)
+	if err != nil {
+		return err
+	}
+
+	for index, line := range strings.Split(string(content), "\n") {
+		line = strings.TrimSuffix(line, "\r")
+		if strings.TrimSpace(line) == "" {
+			continue
+		}
+		lineNumber := index + 1
+		collection := lege.NewCollection(
+			lege.Location{Line: lineNumber, Pos: 1},
+			lege.Location{Line: lineNumber, Pos: len(line)},
+			lege.Boundary{},
+			line,
+		)
+		comment := Comment{*collection, filePath}
 		cb(&comment)
 	}
 
