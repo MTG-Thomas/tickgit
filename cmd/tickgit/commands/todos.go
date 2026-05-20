@@ -23,11 +23,13 @@ import (
 var csvOutput bool
 var baselineFile string
 var failOnNew bool
+var contextLines int
 
 func init() {
 	todosCmd.Flags().BoolVar(&csvOutput, "csv-output", false, "specify whether or not output should be in CSV format")
 	todosCmd.Flags().StringVar(&baselineFile, "baseline-file", "", "compare CSV output against a tickgit baseline file")
 	todosCmd.Flags().BoolVar(&failOnNew, "fail-on-new", false, "exit with status 2 when baseline comparison finds new TODOs")
+	todosCmd.Flags().IntVar(&contextLines, "context-lines", 0, "number of source lines to show before and after each TODO in human-readable output")
 }
 
 var todosCmd = &cobra.Command{
@@ -59,6 +61,11 @@ var todosCmd = &cobra.Command{
 			}
 		})
 		handleError(err, s)
+
+		if !csvOutput {
+			err = foundToDos.FindContext(dir, contextLines)
+			handleError(err, s)
+		}
 
 		s.Suffix = fmt.Sprintf(" blaming %d TODOs", len(foundToDos))
 		ctx := context.Background()
