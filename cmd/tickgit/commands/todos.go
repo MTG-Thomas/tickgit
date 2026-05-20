@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"sort"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/MTG-Thomas/tickgit/pkg/baseline"
@@ -100,7 +101,7 @@ func writeCSV(w io.Writer, foundToDos todos.ToDos) error {
 	for _, todo := range foundToDos {
 		record := []string{
 			todo.String,
-			filepath.ToSlash(todo.FilePath),
+			normalizeCSVPath(todo.FilePath),
 			strconv.Itoa(todo.StartLocation.Line),
 			strconv.Itoa(todo.StartLocation.Pos),
 			strconv.Itoa(todo.EndLocation.Line),
@@ -123,6 +124,10 @@ func writeCSV(w io.Writer, foundToDos todos.ToDos) error {
 	return csvWriter.Error()
 }
 
+func normalizeCSVPath(path string) string {
+	return filepath.ToSlash(strings.ReplaceAll(path, "\\", string(filepath.Separator)))
+}
+
 func handleBaselineComparison(path string, shouldFail bool, currentCSV []byte) {
 	if path == "" {
 		return
@@ -130,7 +135,9 @@ func handleBaselineComparison(path string, shouldFail bool, currentCSV []byte) {
 
 	baselineCSV, err := os.Open(path)
 	handleError(err, nil)
-	defer baselineCSV.Close()
+	defer func() {
+		handleError(baselineCSV.Close(), nil)
+	}()
 
 	result, err := baseline.CompareCSV(baselineCSV, bytes.NewReader(currentCSV))
 	handleError(err, nil)
