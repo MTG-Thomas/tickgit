@@ -44,7 +44,7 @@ Check out [an example](https://www.tickgit.com/browse?repo=github.com/kubernetes
 - [ ] More `TODO` type phrases to match, such as `FIXME`, `XXX`, `HACK`, or customized alternatives.
 - [ ] More configurability (e.g. custom ignore paths)
 - [x] Markdown parsing
-- [ ] More thorough historical stats
+- [x] More thorough historical stats
 
 ### Installation
 
@@ -55,6 +55,16 @@ Download prebuilt binaries from the [latest release](https://github.com/MTG-Thom
 ### Usage
 
 The most up to date usage will be the output of `tickgit --help`.
+
+#### Historical stats
+
+Use `tickgit stats` to summarize current findings by phrase, age bucket, and
+directory, plus the oldest findings according to Git blame metadata.
+
+```sh
+tickgit stats
+tickgit stats --json
+```
 
 ### GitHub Action
 
