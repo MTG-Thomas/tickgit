@@ -36,6 +36,10 @@ var DefaultIgnorePatterns = []string{
 	"__pycache__",
 	".next",
 	"coverage",
+	".github/tickgit-*.csv",
+	".github/tickgit-candidates.md",
+	"tickgit-*.csv",
+	"tickgit-candidates.md",
 }
 
 // SearchOptions configures directory comment searches.

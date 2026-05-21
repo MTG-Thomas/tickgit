@@ -42,8 +42,10 @@ func TestSearchDirUsesDefaultIgnorePatterns(t *testing.T) {
 	dir := t.TempDir()
 	writeTestFile(t, dir, "src", "app.md", "# TODO keep this\n")
 	writeTestFile(t, dir, ".git", "HEAD.md", "# TODO ignore git\n")
+	writeTestFile(t, dir, ".github", "tickgit-baseline.csv", "TODO ignore generated baseline\n")
 	writeTestFile(t, dir, "build", "generated.md", "# TODO ignore build\n")
 	writeTestFile(t, dir, "node_modules", "pkg", "index.md", "# TODO ignore dependencies\n")
+	writeTestFile(t, dir, "tickgit-current.csv", "TODO ignore generated scan\n")
 
 	var comments Comments
 	err := SearchDir(dir, func(comment *Comment) {
