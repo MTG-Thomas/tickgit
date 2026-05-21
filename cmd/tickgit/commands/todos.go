@@ -120,7 +120,9 @@ func findToDos(ctx context.Context, dir string, s *spinner.Spinner) (todos.ToDos
 	if err != nil {
 		var failures todos.BlameLookupFailures
 		if errors.As(err, &failures) {
-			writeBlameLookupWarnings(blameWarningWriter, failures)
+			if warningErr := writeBlameLookupWarnings(blameWarningWriter, failures); warningErr != nil {
+				return nil, warningErr
+			}
 			return foundToDos, nil
 		}
 		return nil, err
@@ -129,13 +131,16 @@ func findToDos(ctx context.Context, dir string, s *spinner.Spinner) (todos.ToDos
 	return foundToDos, nil
 }
 
-func writeBlameLookupWarnings(w io.Writer, failures todos.BlameLookupFailures) {
+func writeBlameLookupWarnings(w io.Writer, failures todos.BlameLookupFailures) error {
 	if w == nil {
-		return
+		return nil
 	}
 	for _, failure := range failures {
-		fmt.Fprintf(w, "tickgit warning: %s\n", failure.Error())
+		if _, err := fmt.Fprintf(w, "tickgit warning: %s\n", failure.Error()); err != nil {
+			return err
+		}
 	}
+	return nil
 }
 
 func selectedMatchPhrases() []string {

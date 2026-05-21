@@ -22,7 +22,9 @@ func reportCommandError(err error, activeSpinner *spinner.Spinner, stderr io.Wri
 	}
 
 	stopSpinner(activeSpinner)
-	fmt.Fprintln(stderr, err)
+	if _, writeErr := fmt.Fprintln(stderr, err); writeErr != nil {
+		return commandErrorExitCode
+	}
 	return commandErrorExitCode
 }
 
