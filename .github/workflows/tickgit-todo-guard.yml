@@ -16,9 +16,13 @@ jobs:
     steps:
       - name: Check out code
         uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          persist-credentials: false
 
       - name: Run tickgit TODO guard
         uses: ./
         with:
           baseline-file: .github/tickgit-baseline.csv
           fail-on-new: "true"
+          ignore-paths: .tmp
