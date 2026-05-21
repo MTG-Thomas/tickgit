@@ -29,6 +29,9 @@ type ContextLine struct {
 	Text string
 }
 
+// DefaultMatchPhrases are the phrase markers matched when no custom list is supplied.
+var DefaultMatchPhrases = []string{"TODO", "FIXME", "OPTIMIZE", "HACK", "XXX", "WTF", "LEGACY"}
+
 // TimeAgo returns a human readable string indicating the time since the todo was added
 func (t *ToDo) TimeAgo() string {
 	if t.Blame == nil {
@@ -39,12 +42,17 @@ func (t *ToDo) TimeAgo() string {
 
 // NewToDo produces a pointer to a ToDo from a comment
 func NewToDo(comment comments.Comment) *ToDo {
-	// Track configurable match phrases in https://github.com/MTG-Thomas/tickgit/issues/3.
-	// This list might be too expansive for a sensible default.
-	startingMatchPhrases := []string{"TODO", "FIXME", "OPTIMIZE", "HACK", "XXX", "WTF", "LEGACY"}
+	return NewToDoWithPhrases(comment, DefaultMatchPhrases)
+}
+
+// NewToDoWithPhrases produces a pointer to a ToDo from a comment and explicit phrase list.
+func NewToDoWithPhrases(comment comments.Comment, startingMatchPhrases []string) *ToDo {
 	var matchPhrases []string
 	for _, phrase := range startingMatchPhrases {
-		// populates matchPhrases with the contents of startingMatchPhrases plus the @+lowerCase version of each phrase
+		phrase = strings.TrimSpace(phrase)
+		if phrase == "" {
+			continue
+		}
 		matchPhrases = append(matchPhrases, phrase, "@"+strings.ToLower(phrase))
 	}
 
