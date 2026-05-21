@@ -52,30 +52,16 @@ var todosCmd = &cobra.Command{
 
 		validateDir(dir)
 
-		foundToDos := make(todos.ToDos, 0)
-		err = comments.SearchDir(dir, func(comment *comments.Comment) {
-			todo := todos.NewToDo(*comment)
-			if todo != nil {
-				foundToDos = append(foundToDos, todo)
-				s.Suffix = fmt.Sprintf(" %d TODOs found", len(foundToDos))
-			}
-		})
+		if !csvOutput {
+			s.Suffix = " finding TODOs"
+		}
+		foundToDos, err := findToDos(context.Background(), dir, s)
 		handleError(err, s)
 
 		if !csvOutput {
 			err = foundToDos.FindContext(dir, contextLines)
 			handleError(err, s)
 		}
-
-		s.Suffix = fmt.Sprintf(" blaming %d TODOs", len(foundToDos))
-		ctx := context.Background()
-		// timeout after 30 seconds
-		// ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
-		// defer cancel()
-		err = foundToDos.FindBlame(ctx, dir)
-		sort.Sort(&foundToDos)
-
-		handleError(err, s)
 
 		s.Stop()
 
@@ -94,6 +80,32 @@ var todosCmd = &cobra.Command{
 		}
 
 	},
+}
+
+func findToDos(ctx context.Context, dir string, s *spinner.Spinner) (todos.ToDos, error) {
+	foundToDos := make(todos.ToDos, 0)
+	err := comments.SearchDir(dir, func(comment *comments.Comment) {
+		todo := todos.NewToDo(*comment)
+		if todo != nil {
+			foundToDos = append(foundToDos, todo)
+			s.Suffix = fmt.Sprintf(" %d TODOs found", len(foundToDos))
+		}
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	s.Suffix = fmt.Sprintf(" blaming %d TODOs", len(foundToDos))
+	// timeout after 30 seconds
+	// ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
+	// defer cancel()
+	err = foundToDos.FindBlame(ctx, dir)
+	sort.Sort(&foundToDos)
+	if err != nil {
+		return nil, err
+	}
+
+	return foundToDos, nil
 }
 
 func writeCSV(w io.Writer, foundToDos todos.ToDos) error {
