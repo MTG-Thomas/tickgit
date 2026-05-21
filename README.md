@@ -5,9 +5,31 @@
 
 ## tickgit 🎟️
 
-`tickgit` is a tool to help you manage latent work in a codebase. Use the `tickgit` command to view pending tasks, progress reports, completion summaries and historical data (using `git` history).
+This fork keeps the original `tickgit` idea, but points it at a more opinionated
+goal: make latent work in code visible enough to promote into proper GitHub
+issues, and prevent new latent-work comments from quietly accumulating in local
+source.
 
-It's not meant to replace full-fledged project management tools such as JIRA or Trello. It will, hopefully, be a useful way to augment those tools with project management patterns that coexist with your code. As such, it's primary audience is software engineers.
+Use the `tickgit` command to view pending tasks, progress reports, completion
+summaries, historical data from `git` history, and issue-candidate markdown.
+Use the included GitHub Action as a read-only latent-work guard on pull requests
+and schedules.
+
+This fork is not meant to replace GitHub Issues, JIRA, Trello, or other project
+management tools. It is meant to catch the work that starts as comments,
+tickets, or checklists in a codebase and give maintainers a safe path to either
+track it properly or stop adding more of it.
+
+### Fork goals
+
+- Detect latent-work comments locally and in CI without mutating repositories.
+- Compare current findings to a committed baseline so existing latent work does
+  not block adoption.
+- Fail pull requests or scheduled checks only when new findings appear.
+- Generate issue-candidate markdown for human review before anything becomes a
+  GitHub issue.
+- Keep supply-chain risk low by using read-only permissions, release-pinned
+  Action refs, and explicit baselines.
 
 ### TODOs
 
@@ -114,6 +136,7 @@ tickgit candidates --repo MTG-Thomas/tickgit --csv-file .github/tickgit-current.
 This fork includes a read-only GitHub Action that compares current tickgit CSV
 output to a committed baseline. It is intended for scheduled and pull request
 checks that fail only when a repository introduces new latent-work comments.
+The Action does not create issues, comments, commits, or other mutations.
 
 Create a baseline:
 
@@ -140,7 +163,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
-      - uses: MTG-Thomas/tickgit@main
+      - uses: MTG-Thomas/tickgit@v0.0.17
         with:
           baseline-file: .github/tickgit-baseline.csv
           fail-on-new: "true"
@@ -148,9 +171,10 @@ jobs:
           ignore-paths: fixtures,docs/generated
 ```
 
-The Action does not create issues, comments, commits, or other mutations. It
-builds tickgit from the pinned Action ref and exits with status 2 when new
-findings appear relative to the baseline.
+Prefer pinning to a release tag or reviewed commit SHA rather than `main` when
+rolling the Action out across repositories. The Action builds tickgit from the
+pinned Action ref and exits with status 2 when new findings appear relative to
+the baseline.
 
 ### API
 

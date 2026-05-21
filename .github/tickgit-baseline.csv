@@ -1,24 +1,24 @@
 text,file_path,start_line,start_position,end_line,end_position,author,author_email,author_sha,author_time
-### TODOs,README.md,12,1,12,9,Patrick DeVivo,patrick.devivo@gmail.com,c9b665c3b55d0f840ff63517f445e86c7170edcb,2019-10-24T22:55:49-04:00
+### TODOs,README.md,34,1,34,9,Patrick DeVivo,patrick.devivo@gmail.com,c9b665c3b55d0f840ff63517f445e86c7170edcb,2019-10-24T22:55:49-04:00
 ### TODOs Badge,docs/API.md,3,1,3,15,Patrick DeVivo,patrick.devivo@gmail.com,31c1b96743d0604e6aa4a7ff763f279b28909bdf,2019-10-31T21:37:38-04:00
-TODO: useTransition hook instead.,README.md,31,1,31,33,Patrick DeVivo,patrick.devivo@gmail.com,0433dc5e93092614003535a4562216be41279775,2019-12-09T19:06:55-05:00
-TODO: Scheduler no longer requires these methods to be polyfilled. But,README.md,27,1,27,70,Patrick DeVivo,patrick.devivo@gmail.com,0433dc5e93092614003535a4562216be41279775,2019-12-09T19:06:55-05:00
-128 TODOs Found 📝,README.md,35,1,35,20,Patrick DeVivo,patrick.devivo@gmail.com,0433dc5e93092614003535a4562216be41279775,2019-12-09T19:06:55-05:00
-TODO:,README.md,19,1,19,5,Patrick DeVivo,patrick.devivo@gmail.com,0433dc5e93092614003535a4562216be41279775,2019-12-09T19:06:55-05:00
-TODO: Scheduler no longer requires these methods to be polyfilled. But,README.md,23,1,23,70,Patrick DeVivo,patrick.devivo@gmail.com,0433dc5e93092614003535a4562216be41279775,2019-12-09T19:06:55-05:00
-Check out [an example](https://www.tickgit.com/browse?repo=github.com/kubernetes/kubernetes) of the TODOs tickgit will surface for the Kubernetes codebase.,README.md,38,1,38,155,Patrick DeVivo,patrick.devivo@gmail.com,4809ff10341972191a3ce197816aa618b85d8d9b,2020-02-17T20:51:48-05:00
-`tickgit` will scan a codebase and identify any TODO items in the comments. It will output a report like so:,README.md,14,1,14,108,Patrick DeVivo,patrick.devivo@gmail.com,4809ff10341972191a3ce197816aa618b85d8d9b,2020-02-17T20:51:48-05:00
-"- [x] Blame - get a better sense of how old TODOs are, when they were introduced and by whom",README.md,42,1,42,92,Patrick DeVivo,patrick.devivo@gmail.com,c4e8dbb662cf42808af3790b29c05e2508b6776d,2020-02-17T21:03:57-05:00
+TODO: useTransition hook instead.,README.md,53,1,53,33,Patrick DeVivo,patrick.devivo@gmail.com,0433dc5e93092614003535a4562216be41279775,2019-12-09T19:06:55-05:00
+TODO: Scheduler no longer requires these methods to be polyfilled. But,README.md,49,1,49,70,Patrick DeVivo,patrick.devivo@gmail.com,0433dc5e93092614003535a4562216be41279775,2019-12-09T19:06:55-05:00
+128 TODOs Found 📝,README.md,57,1,57,20,Patrick DeVivo,patrick.devivo@gmail.com,0433dc5e93092614003535a4562216be41279775,2019-12-09T19:06:55-05:00
+TODO:,README.md,41,1,41,5,Patrick DeVivo,patrick.devivo@gmail.com,0433dc5e93092614003535a4562216be41279775,2019-12-09T19:06:55-05:00
+TODO: Scheduler no longer requires these methods to be polyfilled. But,README.md,45,1,45,70,Patrick DeVivo,patrick.devivo@gmail.com,0433dc5e93092614003535a4562216be41279775,2019-12-09T19:06:55-05:00
+Check out [an example](https://www.tickgit.com/browse?repo=github.com/kubernetes/kubernetes) of the TODOs tickgit will surface for the Kubernetes codebase.,README.md,60,1,60,155,Patrick DeVivo,patrick.devivo@gmail.com,4809ff10341972191a3ce197816aa618b85d8d9b,2020-02-17T20:51:48-05:00
+`tickgit` will scan a codebase and identify any TODO items in the comments. It will output a report like so:,README.md,36,1,36,108,Patrick DeVivo,patrick.devivo@gmail.com,4809ff10341972191a3ce197816aa618b85d8d9b,2020-02-17T20:51:48-05:00
+"- [x] Blame - get a better sense of how old TODOs are, when they were introduced and by whom",README.md,64,1,64,92,Patrick DeVivo,patrick.devivo@gmail.com,c4e8dbb662cf42808af3790b29c05e2508b6776d,2020-02-17T21:03:57-05:00
 [![TODOs](https://badgen.net/https/api.tickgit.com/badgen/github.com/MTG-Thomas/tickgit)](https://www.tickgit.com/browse?repo=github.com/MTG-Thomas/tickgit),docs/API.md,23,1,23,156,Thomas Bray,87775189+MTG-Thomas@users.noreply.github.com,434b4e2d53127cd7199c6e23f33fc32dc2add905,2026-05-19T13:32:24-04:00
 [![TODOs](https://badgen.net/https/api.tickgit.com/badgen/github.com/MTG-Thomas/tickgit)](https://www.tickgit.com/browse?repo=github.com/MTG-Thomas/tickgit),docs/API.md,20,1,20,156,Thomas Bray,87775189+MTG-Thomas@users.noreply.github.com,434b4e2d53127cd7199c6e23f33fc32dc2add905,2026-05-19T13:32:24-04:00
-name: tickgit TODO guard,README.md,127,1,127,24,Thomas Bray,87775189+MTG-Thomas@users.noreply.github.com,83348e7147f7f007c80977937edb90286445838e,2026-05-20T10:07:45-04:00
-- [x] Context - use `--context-lines <n>` for visibility into the lines of code _around_ a TODO,README.md,43,1,43,95,Thomas Bray,87775189+MTG-Thomas@users.noreply.github.com,4a60068f707240c0e4bd16b8ba6e83c9c0469037,2026-05-20T16:56:42-04:00
-"tickgit --match-phrase TODO,FIXME --csv-output",README.md,77,1,77,46,Thomas Bray,87775189+MTG-Thomas@users.noreply.github.com,bcd5d3a69ee5ad850e4858287b2b8c007eeca5d3,2026-05-20T21:54:40-04:00
-"- [x] More `TODO` type phrases to match, such as `FIXME`, `XXX`, `HACK`, or customized alternatives.",README.md,44,1,44,100,Thomas Bray,87775189+MTG-Thomas@users.noreply.github.com,bcd5d3a69ee5ad850e4858287b2b8c007eeca5d3,2026-05-20T21:54:40-04:00
-"By default, tickgit matches `TODO`, `FIXME`, `OPTIMIZE`, `HACK`, `XXX`, `WTF`,",README.md,71,1,71,78,Thomas Bray,87775189+MTG-Thomas@users.noreply.github.com,bcd5d3a69ee5ad850e4858287b2b8c007eeca5d3,2026-05-20T21:54:40-04:00
-"and `LEGACY`, plus the `@lowercase` form for each phrase. Use",README.md,72,1,72,61,Thomas Bray,87775189+MTG-Thomas@users.noreply.github.com,bcd5d3a69ee5ad850e4858287b2b8c007eeca5d3,2026-05-20T21:54:40-04:00
-tickgit --match-phrase TODO --match-phrase FIXME,README.md,76,1,76,48,Thomas Bray,87775189+MTG-Thomas@users.noreply.github.com,bcd5d3a69ee5ad850e4858287b2b8c007eeca5d3,2026-05-20T21:54:40-04:00
-tickgit stats --match-phrase TODO --json,README.md,78,1,78,40,Thomas Bray,87775189+MTG-Thomas@users.noreply.github.com,bcd5d3a69ee5ad850e4858287b2b8c007eeca5d3,2026-05-20T21:54:40-04:00
-"match-phrases: TODO,FIXME,HACK",README.md,147,1,147,40,Thomas Bray,87775189+MTG-Thomas@users.noreply.github.com,bcd5d3a69ee5ad850e4858287b2b8c007eeca5d3,2026-05-20T21:54:40-04:00
+name: tickgit TODO guard,README.md,150,1,150,24,Thomas Bray,87775189+MTG-Thomas@users.noreply.github.com,83348e7147f7f007c80977937edb90286445838e,2026-05-20T10:07:45-04:00
+- [x] Context - use `--context-lines <n>` for visibility into the lines of code _around_ a TODO,README.md,65,1,65,95,Thomas Bray,87775189+MTG-Thomas@users.noreply.github.com,4a60068f707240c0e4bd16b8ba6e83c9c0469037,2026-05-20T16:56:42-04:00
+"tickgit --match-phrase TODO,FIXME --csv-output",README.md,99,1,99,46,Thomas Bray,87775189+MTG-Thomas@users.noreply.github.com,bcd5d3a69ee5ad850e4858287b2b8c007eeca5d3,2026-05-20T21:54:40-04:00
+"- [x] More `TODO` type phrases to match, such as `FIXME`, `XXX`, `HACK`, or customized alternatives.",README.md,66,1,66,100,Thomas Bray,87775189+MTG-Thomas@users.noreply.github.com,bcd5d3a69ee5ad850e4858287b2b8c007eeca5d3,2026-05-20T21:54:40-04:00
+"By default, tickgit matches `TODO`, `FIXME`, `OPTIMIZE`, `HACK`, `XXX`, `WTF`,",README.md,93,1,93,78,Thomas Bray,87775189+MTG-Thomas@users.noreply.github.com,bcd5d3a69ee5ad850e4858287b2b8c007eeca5d3,2026-05-20T21:54:40-04:00
+"and `LEGACY`, plus the `@lowercase` form for each phrase. Use",README.md,94,1,94,61,Thomas Bray,87775189+MTG-Thomas@users.noreply.github.com,bcd5d3a69ee5ad850e4858287b2b8c007eeca5d3,2026-05-20T21:54:40-04:00
+tickgit --match-phrase TODO --match-phrase FIXME,README.md,98,1,98,48,Thomas Bray,87775189+MTG-Thomas@users.noreply.github.com,bcd5d3a69ee5ad850e4858287b2b8c007eeca5d3,2026-05-20T21:54:40-04:00
+tickgit stats --match-phrase TODO --json,README.md,100,1,100,40,Thomas Bray,87775189+MTG-Thomas@users.noreply.github.com,bcd5d3a69ee5ad850e4858287b2b8c007eeca5d3,2026-05-20T21:54:40-04:00
+"match-phrases: TODO,FIXME,HACK",README.md,170,1,170,40,Thomas Bray,87775189+MTG-Thomas@users.noreply.github.com,bcd5d3a69ee5ad850e4858287b2b8c007eeca5d3,2026-05-20T21:54:40-04:00
 "TODO capture this unknown file\n/* FIXME capture this block */\n""",pkg/comments/comments_test.go,110,28,111,-1,Thomas Bray,87775189+MTG-Thomas@users.noreply.github.com,55b0397d14d15706504f18e3b6d4377738080ac1,2026-05-20T22:18:10-04:00
 "TODO keep this visible\n""), 0644)",pkg/todos/todos_test.go,180,77,181,-1,Thomas Bray,87775189+MTG-Thomas@users.noreply.github.com,55b0397d14d15706504f18e3b6d4377738080ac1,2026-05-20T22:18:10-04:00
