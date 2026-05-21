@@ -24,12 +24,15 @@ var csvOutput bool
 var baselineFile string
 var failOnNew bool
 var contextLines int
+var matchPhrases []string
 
 func init() {
 	todosCmd.Flags().BoolVar(&csvOutput, "csv-output", false, "specify whether or not output should be in CSV format")
 	todosCmd.Flags().StringVar(&baselineFile, "baseline-file", "", "compare CSV output against a tickgit baseline file")
 	todosCmd.Flags().BoolVar(&failOnNew, "fail-on-new", false, "exit with status 2 when baseline comparison finds new TODOs")
 	todosCmd.Flags().IntVar(&contextLines, "context-lines", 0, "number of source lines to show before and after each TODO in human-readable output")
+	todosCmd.Flags().StringSliceVar(&matchPhrases, "match-phrase", nil, "phrase to match as latent work; repeat or comma-separate to override defaults")
+	statsCmd.Flags().StringSliceVar(&matchPhrases, "match-phrase", nil, "phrase to match as latent work; repeat or comma-separate to override defaults")
 }
 
 var todosCmd = &cobra.Command{
@@ -84,8 +87,9 @@ var todosCmd = &cobra.Command{
 
 func findToDos(ctx context.Context, dir string, s *spinner.Spinner) (todos.ToDos, error) {
 	foundToDos := make(todos.ToDos, 0)
+	phrases := selectedMatchPhrases()
 	err := comments.SearchDir(dir, func(comment *comments.Comment) {
-		todo := todos.NewToDo(*comment)
+		todo := todos.NewToDoWithPhrases(*comment, phrases)
 		if todo != nil {
 			foundToDos = append(foundToDos, todo)
 			s.Suffix = fmt.Sprintf(" %d TODOs found", len(foundToDos))
@@ -106,6 +110,13 @@ func findToDos(ctx context.Context, dir string, s *spinner.Spinner) (todos.ToDos
 	}
 
 	return foundToDos, nil
+}
+
+func selectedMatchPhrases() []string {
+	if len(matchPhrases) == 0 {
+		return todos.DefaultMatchPhrases
+	}
+	return matchPhrases
 }
 
 func writeCSV(w io.Writer, foundToDos todos.ToDos) error {

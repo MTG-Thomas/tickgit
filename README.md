@@ -41,7 +41,7 @@ Check out [an example](https://www.tickgit.com/browse?repo=github.com/kubernetes
 
 - [x] Blame - get a better sense of how old TODOs are, when they were introduced and by whom
 - [x] Context - use `--context-lines <n>` for visibility into the lines of code _around_ a TODO
-- [ ] More `TODO` type phrases to match, such as `FIXME`, `XXX`, `HACK`, or customized alternatives.
+- [x] More `TODO` type phrases to match, such as `FIXME`, `XXX`, `HACK`, or customized alternatives.
 - [ ] More configurability (e.g. custom ignore paths)
 - [x] Markdown parsing
 - [x] More thorough historical stats
@@ -64,6 +64,18 @@ directory, plus the oldest findings according to Git blame metadata.
 ```sh
 tickgit stats
 tickgit stats --json
+```
+
+#### Match phrases
+
+By default, tickgit matches `TODO`, `FIXME`, `OPTIMIZE`, `HACK`, `XXX`, `WTF`,
+and `LEGACY`, plus the `@lowercase` form for each phrase. Use
+`--match-phrase` to override that list.
+
+```sh
+tickgit --match-phrase TODO --match-phrase FIXME
+tickgit --match-phrase TODO,FIXME --csv-output
+tickgit stats --match-phrase TODO --json
 ```
 
 ### GitHub Action
@@ -101,6 +113,7 @@ jobs:
         with:
           baseline-file: .github/tickgit-baseline.csv
           fail-on-new: "true"
+          match-phrases: TODO,FIXME,HACK
 ```
 
 The Action does not create issues, comments, commits, or other mutations. It

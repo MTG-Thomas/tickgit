@@ -37,6 +37,41 @@ func TestNewToDo(t *testing.T) {
 	}
 }
 
+func TestNewToDoWithCustomMatchPhrases(t *testing.T) {
+	collection := lege.NewCollection(lege.Location{}, lege.Location{}, lege.Boundary{}, "NOTE Hello World")
+	comment := comments.Comment{
+		Collection: *collection,
+	}
+
+	todo := NewToDoWithPhrases(comment, []string{"NOTE"})
+	if todo == nil {
+		t.Fatalf("expected a TODO from custom NOTE phrase")
+	}
+	if todo.Phrase != "NOTE" {
+		t.Fatalf("expected matched phrase to be NOTE, got: %s", todo.Phrase)
+	}
+
+	defaultTodo := NewToDo(comment)
+	if defaultTodo != nil {
+		t.Fatalf("did not expect default phrases to match NOTE, got: %v", defaultTodo)
+	}
+}
+
+func TestNewToDoWithCustomMatchPhrasesAddsAtLowercaseVariant(t *testing.T) {
+	collection := lege.NewCollection(lege.Location{}, lege.Location{}, lege.Boundary{}, "@note Hello World")
+	comment := comments.Comment{
+		Collection: *collection,
+	}
+
+	todo := NewToDoWithPhrases(comment, []string{"NOTE"})
+	if todo == nil {
+		t.Fatalf("expected @note to match custom NOTE phrase")
+	}
+	if todo.Phrase != "@note" {
+		t.Fatalf("expected matched phrase to be @note, got: %s", todo.Phrase)
+	}
+}
+
 func TestFindContextAddsSurroundingLines(t *testing.T) {
 	dir := t.TempDir()
 	phrase := "TO" + "DO"

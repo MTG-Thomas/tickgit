@@ -13,6 +13,10 @@ inputs:
     description: Exit non-zero when current findings contain TODOs not present in the baseline.
     required: false
     default: "true"
+  match-phrases:
+    description: Comma-separated phrase list to match instead of tickgit defaults.
+    required: false
+    default: ""
 runs:
   using: composite
   steps:
@@ -38,5 +42,8 @@ runs:
         args=("--csv-output" "--baseline-file" "${{ inputs.baseline-file }}")
         if [[ "${{ inputs.fail-on-new }}" == "true" ]]; then
           args+=("--fail-on-new")
+        fi
+        if [[ -n "${{ inputs.match-phrases }}" ]]; then
+          args+=("--match-phrase" "${{ inputs.match-phrases }}")
         fi
         "$RUNNER_TEMP/tickgit-action/tickgit" "${args[@]}" "${{ inputs.path }}"
