@@ -52,23 +52,33 @@ var statsCmd = &cobra.Command{
 			return
 		}
 
-		writeStats(report)
+		handleError(writeStats(report), nil)
 	},
 }
 
-func writeStats(report stats.Report) {
-	fmt.Fprintf(os.Stdout, "%d TODOs Found\n\n", report.Total)
-	writeCounts("By phrase", report.ByPhrase)
-	writeCounts("By age", report.ByAgeBucket)
-	writeCounts("By directory", report.ByDirectory)
-
-	if len(report.Oldest) == 0 {
-		return
+func writeStats(report stats.Report) error {
+	if _, err := fmt.Fprintf(os.Stdout, "%d TODOs Found\n\n", report.Total); err != nil {
+		return err
+	}
+	if err := writeCounts("By phrase", report.ByPhrase); err != nil {
+		return err
+	}
+	if err := writeCounts("By age", report.ByAgeBucket); err != nil {
+		return err
+	}
+	if err := writeCounts("By directory", report.ByDirectory); err != nil {
+		return err
 	}
 
-	fmt.Fprintln(os.Stdout, "Oldest findings:")
+	if len(report.Oldest) == 0 {
+		return nil
+	}
+
+	if _, err := fmt.Fprintln(os.Stdout, "Oldest findings:"); err != nil {
+		return err
+	}
 	for _, finding := range report.Oldest {
-		fmt.Fprintf(
+		if _, err := fmt.Fprintf(
 			os.Stdout,
 			"  %s:%d %s by %s in %s (%s)\n",
 			finding.FilePath,
@@ -77,16 +87,27 @@ func writeStats(report stats.Report) {
 			finding.Author,
 			finding.IntroducedSHA,
 			finding.AgeBucket,
-		)
+		); err != nil {
+			return err
+		}
 	}
+
+	return nil
 }
 
-func writeCounts(title string, counts map[string]int) {
-	fmt.Fprintln(os.Stdout, title+":")
-	for _, key := range sortedKeys(counts) {
-		fmt.Fprintf(os.Stdout, "  %s: %d\n", key, counts[key])
+func writeCounts(title string, counts map[string]int) error {
+	if _, err := fmt.Fprintln(os.Stdout, title+":"); err != nil {
+		return err
 	}
-	fmt.Fprintln(os.Stdout)
+	for _, key := range sortedKeys(counts) {
+		if _, err := fmt.Fprintf(os.Stdout, "  %s: %d\n", key, counts[key]); err != nil {
+			return err
+		}
+	}
+	if _, err := fmt.Fprintln(os.Stdout); err != nil {
+		return err
+	}
+	return nil
 }
 
 func sortedKeys(counts map[string]int) []string {
