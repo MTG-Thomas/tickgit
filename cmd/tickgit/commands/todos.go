@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/csv"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -25,6 +26,9 @@ var baselineFile string
 var failOnNew bool
 var contextLines int
 var matchPhrases []string
+var blameWarningWriter io.Writer = os.Stderr
+var ignorePaths []string
+var colorMode string
 
 func init() {
 	todosCmd.Flags().BoolVar(&csvOutput, "csv-output", false, "specify whether or not output should be in CSV format")
@@ -32,7 +36,10 @@ func init() {
 	todosCmd.Flags().BoolVar(&failOnNew, "fail-on-new", false, "exit with status 2 when baseline comparison finds new TODOs")
 	todosCmd.Flags().IntVar(&contextLines, "context-lines", 0, "number of source lines to show before and after each TODO in human-readable output")
 	todosCmd.Flags().StringSliceVar(&matchPhrases, "match-phrase", nil, "phrase to match as latent work; repeat or comma-separate to override defaults")
+	todosCmd.Flags().StringSliceVar(&ignorePaths, "ignore-path", nil, "path pattern to ignore while scanning; repeat or comma-separate")
+	todosCmd.Flags().StringVar(&colorMode, "color", "auto", "colorize human-readable output: auto, always, never")
 	statsCmd.Flags().StringSliceVar(&matchPhrases, "match-phrase", nil, "phrase to match as latent work; repeat or comma-separate to override defaults")
+	statsCmd.Flags().StringSliceVar(&ignorePaths, "ignore-path", nil, "path pattern to ignore while scanning; repeat or comma-separate")
 }
 
 var todosCmd = &cobra.Command{
@@ -78,7 +85,11 @@ var todosCmd = &cobra.Command{
 
 			handleBaselineComparison(baselineFile, failOnNew, buf.Bytes())
 		} else {
-			err := todos.WriteTodos(foundToDos, os.Stdout)
+			mode, ok := todos.ParseColorMode(colorMode)
+			if !ok {
+				handleError(fmt.Errorf("invalid color mode %q: expected auto, always, or never", colorMode), s)
+			}
+			err := todos.WriteTodosWithOptions(foundToDos, os.Stdout, todos.ReportOptions{Color: mode})
 			handleError(err, s)
 		}
 
@@ -88,7 +99,8 @@ var todosCmd = &cobra.Command{
 func findToDos(ctx context.Context, dir string, s *spinner.Spinner) (todos.ToDos, error) {
 	foundToDos := make(todos.ToDos, 0)
 	phrases := selectedMatchPhrases()
-	err := comments.SearchDir(dir, func(comment *comments.Comment) {
+	searchOptions := comments.SearchOptions{IgnorePatterns: selectedIgnorePatterns()}
+	err := comments.SearchDirWithOptions(dir, searchOptions, func(comment *comments.Comment) {
 		todo := todos.NewToDoWithPhrases(*comment, phrases)
 		if todo != nil {
 			foundToDos = append(foundToDos, todo)
@@ -106,10 +118,29 @@ func findToDos(ctx context.Context, dir string, s *spinner.Spinner) (todos.ToDos
 	err = foundToDos.FindBlame(ctx, dir)
 	sort.Sort(&foundToDos)
 	if err != nil {
+		var failures todos.BlameLookupFailures
+		if errors.As(err, &failures) {
+			if warningErr := writeBlameLookupWarnings(blameWarningWriter, failures); warningErr != nil {
+				return nil, warningErr
+			}
+			return foundToDos, nil
+		}
 		return nil, err
 	}
 
 	return foundToDos, nil
+}
+
+func writeBlameLookupWarnings(w io.Writer, failures todos.BlameLookupFailures) error {
+	if w == nil {
+		return nil
+	}
+	for _, failure := range failures {
+		if _, err := fmt.Fprintf(w, "tickgit warning: %s\n", failure.Error()); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func selectedMatchPhrases() []string {
@@ -117,6 +148,16 @@ func selectedMatchPhrases() []string {
 		return todos.DefaultMatchPhrases
 	}
 	return matchPhrases
+}
+
+func selectedIgnorePatterns() []string {
+	if len(ignorePaths) == 0 {
+		return nil
+	}
+
+	patterns := make([]string, 0, len(ignorePaths))
+	patterns = append(patterns, ignorePaths...)
+	return patterns
 }
 
 func writeCSV(w io.Writer, foundToDos todos.ToDos) error {

@@ -2,23 +2,39 @@ package commands
 
 import (
 	"fmt"
+	"io"
 	"os"
 
 	"github.com/briandowns/spinner"
 )
 
-// Track CLI error handling cleanup in https://github.com/MTG-Thomas/tickgit/issues/6.
-func handleError(err error, spinner *spinner.Spinner) {
-	if err != nil {
-		if spinner != nil {
-			// spinner.Suffix = ""
-			spinner.FinalMSG = err.Error()
-			spinner.Stop()
-		} else {
-			fmt.Println(err)
-		}
-		os.Exit(1)
+const commandErrorExitCode = 1
+
+func handleError(err error, activeSpinner *spinner.Spinner) {
+	if code := reportCommandError(err, activeSpinner, os.Stderr); code != 0 {
+		os.Exit(code)
 	}
+}
+
+func reportCommandError(err error, activeSpinner *spinner.Spinner, stderr io.Writer) int {
+	if err == nil {
+		return 0
+	}
+
+	stopSpinner(activeSpinner)
+	if _, writeErr := fmt.Fprintln(stderr, err); writeErr != nil {
+		return commandErrorExitCode
+	}
+	return commandErrorExitCode
+}
+
+func stopSpinner(activeSpinner *spinner.Spinner) {
+	if activeSpinner == nil {
+		return
+	}
+
+	activeSpinner.FinalMSG = ""
+	activeSpinner.Stop()
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
@@ -26,14 +42,20 @@ func Execute() {
 	if len(os.Args) > 1 && os.Args[1] == "stats" {
 		os.Args = append([]string{os.Args[0]}, os.Args[2:]...)
 		if err := statsCmd.Execute(); err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			handleError(err, nil)
+		}
+		return
+	}
+
+	if len(os.Args) > 1 && os.Args[1] == "candidates" {
+		os.Args = append([]string{os.Args[0]}, os.Args[2:]...)
+		if err := candidatesCmd.Execute(); err != nil {
+			handleError(err, nil)
 		}
 		return
 	}
 
 	if err := todosCmd.Execute(); err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+		handleError(err, nil)
 	}
 }

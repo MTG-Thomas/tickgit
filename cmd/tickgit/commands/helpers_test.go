@@ -67,3 +67,35 @@ func TestWriteCSVNormalizesFilePathSeparators(t *testing.T) {
 		t.Fatalf("expected pkg/file.go in CSV, got:\n%s", buf.String())
 	}
 }
+
+func TestSelectedIgnorePatternsIsEmptyWithoutConfiguredPatterns(t *testing.T) {
+	ignorePaths = nil
+
+	patterns := selectedIgnorePatterns()
+
+	if len(patterns) != 0 {
+		t.Fatalf("expected no configured ignore patterns, got %v", patterns)
+	}
+}
+
+func TestSelectedIgnorePatternsAddsConfiguredPatterns(t *testing.T) {
+	ignorePaths = []string{"fixtures", "docs/generated"}
+	t.Cleanup(func() {
+		ignorePaths = nil
+	})
+
+	patterns := selectedIgnorePatterns()
+
+	if !containsString(patterns, "fixtures") || !containsString(patterns, "docs/generated") {
+		t.Fatalf("expected configured ignore patterns, got %v", patterns)
+	}
+}
+
+func containsString(values []string, want string) bool {
+	for _, value := range values {
+		if value == want {
+			return true
+		}
+	}
+	return false
+}
