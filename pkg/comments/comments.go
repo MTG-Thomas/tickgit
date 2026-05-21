@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"io"
 	"os"
+	pathpkg "path"
 	"path/filepath"
 	"strings"
 	"sync"
@@ -16,6 +17,31 @@ import (
 
 // Comments is a list of comments
 type Comments []*Comment
+
+// DefaultIgnorePatterns skips common repository metadata, dependency, and build paths.
+var DefaultIgnorePatterns = []string{
+	".git",
+	".hg",
+	".svn",
+	"node_modules",
+	"vendor",
+	"dist",
+	"build",
+	"target",
+	"bin",
+	"obj",
+	".terraform",
+	".venv",
+	"venv",
+	"__pycache__",
+	".next",
+	"coverage",
+}
+
+// SearchOptions configures directory comment searches.
+type SearchOptions struct {
+	IgnorePatterns []string
+}
 
 // Comment represents a comment in a source code file
 type Comment struct {
@@ -48,8 +74,8 @@ func SearchFile(filePath string, reader io.Reader, cb func(*Comment)) error {
 	}
 
 	options, ok := LanguageParseOptions[lang]
-	if !ok { // Track unknown-language fallback behavior in https://github.com/MTG-Thomas/tickgit/issues/5.
-		return nil
+	if !ok {
+		options = CStyleCommentOptions
 	}
 	commentParser, err := lege.NewParser(options)
 	if err != nil {
@@ -96,19 +122,28 @@ func searchMarkdownFile(filePath string, reader io.Reader, cb func(*Comment)) er
 
 // SearchDir searches a directory for comments
 func SearchDir(dirPath string, cb func(comment *Comment)) error {
+	return SearchDirWithOptions(dirPath, SearchOptions{}, cb)
+}
+
+// SearchDirWithOptions searches a directory for comments with explicit options.
+func SearchDirWithOptions(dirPath string, options SearchOptions, cb func(comment *Comment)) error {
+	ignorePatterns := append([]string{}, DefaultIgnorePatterns...)
+	ignorePatterns = append(ignorePatterns, options.IgnorePatterns...)
+
 	err := godirwalk.Walk(dirPath, &godirwalk.Options{
 		Callback: func(path string, de *godirwalk.Dirent) error {
 			localPath, err := filepath.Rel(dirPath, path)
 			if err != nil {
 				return err
 			}
-			pathComponents := strings.Split(localPath, string(os.PathSeparator))
-			// Track configurable ignore rules in https://github.com/MTG-Thomas/tickgit/issues/4.
-			matched, err := filepath.Match(".git", pathComponents[0])
+			ignored, err := matchesIgnorePattern(localPath, ignorePatterns)
 			if err != nil {
 				return err
 			}
-			if matched {
+			if ignored && de.IsDir() {
+				return filepath.SkipDir
+			}
+			if ignored {
 				return nil
 			}
 			if de.IsRegular() {
@@ -137,6 +172,45 @@ func SearchDir(dirPath string, cb func(comment *Comment)) error {
 		return err
 	}
 	return nil
+}
+
+func matchesIgnorePattern(localPath string, patterns []string) (bool, error) {
+	slashPath := filepath.ToSlash(localPath)
+	if slashPath == "." {
+		return false, nil
+	}
+
+	components := strings.Split(slashPath, "/")
+	for _, pattern := range patterns {
+		pattern = strings.TrimSpace(filepath.ToSlash(pattern))
+		pattern = strings.Trim(pattern, "/")
+		if pattern == "" {
+			continue
+		}
+
+		if strings.Contains(pattern, "/") {
+			matched, err := pathpkg.Match(pattern, slashPath)
+			if err != nil {
+				return false, err
+			}
+			if matched || slashPath == pattern || strings.HasPrefix(slashPath, pattern+"/") {
+				return true, nil
+			}
+			continue
+		}
+
+		for _, component := range components {
+			matched, err := pathpkg.Match(pattern, component)
+			if err != nil {
+				return false, err
+			}
+			if matched {
+				return true, nil
+			}
+		}
+	}
+
+	return false, nil
 }
 
 // SearchCommit searches all files in the tree of a given commit

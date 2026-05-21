@@ -17,6 +17,10 @@ inputs:
     description: Comma-separated phrase list to match instead of tickgit defaults.
     required: false
     default: ""
+  ignore-paths:
+    description: Comma-separated path patterns to ignore in addition to tickgit defaults.
+    required: false
+    default: ""
 runs:
   using: composite
   steps:
@@ -45,5 +49,8 @@ runs:
         fi
         if [[ -n "${{ inputs.match-phrases }}" ]]; then
           args+=("--match-phrase" "${{ inputs.match-phrases }}")
+        fi
+        if [[ -n "${{ inputs.ignore-paths }}" ]]; then
+          args+=("--ignore-path" "${{ inputs.ignore-paths }}")
         fi
         "$RUNNER_TEMP/tickgit-action/tickgit" "${args[@]}" "${{ inputs.path }}"

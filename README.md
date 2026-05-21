@@ -42,7 +42,7 @@ Check out [an example](https://www.tickgit.com/browse?repo=github.com/kubernetes
 - [x] Blame - get a better sense of how old TODOs are, when they were introduced and by whom
 - [x] Context - use `--context-lines <n>` for visibility into the lines of code _around_ a TODO
 - [x] More `TODO` type phrases to match, such as `FIXME`, `XXX`, `HACK`, or customized alternatives.
-- [ ] More configurability (e.g. custom ignore paths)
+- [x] More configurability (e.g. custom ignore paths and color output)
 - [x] Markdown parsing
 - [x] More thorough historical stats
 
@@ -76,6 +76,37 @@ and `LEGACY`, plus the `@lowercase` form for each phrase. Use
 tickgit --match-phrase TODO --match-phrase FIXME
 tickgit --match-phrase TODO,FIXME --csv-output
 tickgit stats --match-phrase TODO --json
+```
+
+#### Ignore paths and color
+
+Tickgit skips common repository metadata, dependency, and build paths by
+default, including `.git`, `node_modules`, `vendor`, `dist`, `build`, `target`,
+`bin`, `obj`, `.terraform`, virtual environment folders, and coverage output.
+Use `--ignore-path` to add repository-specific patterns.
+
+```sh
+tickgit --ignore-path fixtures --ignore-path generated
+tickgit stats --ignore-path docs/generated
+```
+
+Human-readable output is colorized by default unless `NO_COLOR` is set. Use
+`--color auto`, `--color always`, or `--color never` to choose explicitly.
+
+```sh
+NO_COLOR=1 tickgit
+tickgit --color never
+```
+
+#### Issue candidates
+
+Use `tickgit candidates` to turn tickgit CSV output into issue-candidate
+markdown with stable duplicate keys. This command is intended for scheduled
+curation workflows; it does not create issues or mutate repositories.
+
+```sh
+tickgit --csv-output > .github/tickgit-current.csv
+tickgit candidates --repo MTG-Thomas/tickgit --csv-file .github/tickgit-current.csv > .github/tickgit-candidates.md
 ```
 
 ### GitHub Action
@@ -114,6 +145,7 @@ jobs:
           baseline-file: .github/tickgit-baseline.csv
           fail-on-new: "true"
           match-phrases: TODO,FIXME,HACK
+          ignore-paths: fixtures,docs/generated
 ```
 
 The Action does not create issues, comments, commits, or other mutations. It

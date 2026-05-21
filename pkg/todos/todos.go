@@ -2,6 +2,7 @@ package todos
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -27,6 +28,31 @@ type ToDos []*ToDo
 type ContextLine struct {
 	Line int
 	Text string
+}
+
+// BlameLookupFailure is a non-fatal failure to find git blame for one file.
+type BlameLookupFailure struct {
+	FilePath string
+	Lines    []int
+	Err      error
+}
+
+func (f BlameLookupFailure) Error() string {
+	return fmt.Sprintf("could not determine git blame for %s: %v", f.FilePath, f.Err)
+}
+
+func (f BlameLookupFailure) Unwrap() error {
+	return f.Err
+}
+
+// BlameLookupFailures collects non-fatal blame lookup failures.
+type BlameLookupFailures []BlameLookupFailure
+
+func (f BlameLookupFailures) Error() string {
+	if len(f) == 1 {
+		return f[0].Error()
+	}
+	return fmt.Sprintf("could not determine git blame for %d files", len(f))
 }
 
 // DefaultMatchPhrases are the phrase markers matched when no custom list is supplied.
@@ -126,6 +152,7 @@ func (t *ToDos) FindBlame(ctx context.Context, dir string) error {
 		fileMap[filePath] = append(fileMap[filePath], todo)
 	}
 
+	var failures BlameLookupFailures
 	for filePath, todos := range fileMap {
 		lines := make([]int, 0)
 
@@ -137,7 +164,12 @@ func (t *ToDos) FindBlame(ctx context.Context, dir string) error {
 			Lines:     lines,
 		})
 		if err != nil {
-			// Track blame error reporting in https://github.com/MTG-Thomas/tickgit/issues/7.
+			failedLines := append([]int(nil), lines...)
+			failures = append(failures, BlameLookupFailure{
+				FilePath: filePath,
+				Lines:    failedLines,
+				Err:      err,
+			})
 			continue
 		}
 		for line, blame := range blames {
@@ -148,6 +180,9 @@ func (t *ToDos) FindBlame(ctx context.Context, dir string) error {
 				}
 			}
 		}
+	}
+	if len(failures) > 0 {
+		return failures
 	}
 	return nil
 }
