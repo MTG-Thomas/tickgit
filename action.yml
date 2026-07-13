@@ -89,11 +89,12 @@ runs:
           base_sha="${{ github.event.before }}"
         fi
         if [[ "${{ inputs.changed-only }}" == "true" && -n "$base_sha" && ! "$base_sha" =~ ^0+$ ]]; then
-          if ! git cat-file -e "${base_sha}^{commit}" 2>/dev/null; then
-            git fetch --no-tags --depth=1 origin "$base_sha"
+          git_safe=(git -c "safe.directory=$GITHUB_WORKSPACE")
+          if ! "${git_safe[@]}" cat-file -e "${base_sha}^{commit}" 2>/dev/null; then
+            "${git_safe[@]}" fetch --no-tags --depth=1 origin "$base_sha"
           fi
           include_file="$RUNNER_TEMP/tickgit-action/changed-files.txt"
-          git diff --name-only --diff-filter=ACMR "$base_sha...HEAD" -- "${{ inputs.path }}" > "$include_file"
+          "${git_safe[@]}" diff --name-only --diff-filter=ACMR "$base_sha...HEAD" -- "${{ inputs.path }}" > "$include_file"
           if [[ ! -s "$include_file" ]]; then
             echo "tickgit diff check: no changed files to scan"
             exit 0
