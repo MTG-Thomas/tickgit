@@ -45,6 +45,9 @@ var DefaultIgnorePatterns = []string{
 // SearchOptions configures directory comment searches.
 type SearchOptions struct {
 	IgnorePatterns []string
+	// IncludePaths limits scanning to exact repository-relative file paths.
+	// An empty list scans every non-ignored file.
+	IncludePaths []string
 }
 
 // Comment represents a comment in a source code file
@@ -133,6 +136,13 @@ func SearchDir(dirPath string, cb func(comment *Comment)) error {
 func SearchDirWithOptions(dirPath string, options SearchOptions, cb func(comment *Comment)) error {
 	ignorePatterns := append([]string{}, DefaultIgnorePatterns...)
 	ignorePatterns = append(ignorePatterns, options.IgnorePatterns...)
+	includePaths := make(map[string]struct{}, len(options.IncludePaths))
+	for _, includePath := range options.IncludePaths {
+		normalized := strings.TrimPrefix(filepath.ToSlash(strings.TrimSpace(includePath)), "./")
+		if normalized != "" {
+			includePaths[normalized] = struct{}{}
+		}
+	}
 
 	err := godirwalk.Walk(dirPath, &godirwalk.Options{
 		Callback: func(path string, de *godirwalk.Dirent) error {
@@ -151,6 +161,11 @@ func SearchDirWithOptions(dirPath string, options SearchOptions, cb func(comment
 				return nil
 			}
 			if de.IsRegular() {
+				if len(includePaths) > 0 {
+					if _, included := includePaths[filepath.ToSlash(localPath)]; !included {
+						return nil
+					}
+				}
 				p, err := filepath.Abs(path)
 				if err != nil {
 					return err
