@@ -172,9 +172,10 @@ jobs:
 ```
 
 Prefer pinning to a release tag or reviewed commit SHA rather than `main` when
-rolling the Action out across repositories. The Action builds tickgit from the
-pinned Action ref and exits with status 2 when new findings appear relative to
-the baseline.
+rolling the Action out across repositories. The Action downloads the matching
+v0.0.18 release archive, verifies its committed SHA-256 digest, and exits with
+status 2 when new findings appear relative to the baseline. It does not install
+Go or compile tickgit during each job.
 
 For pull requests and pushes, the Action scans only added, copied, modified,
 or renamed files from the event base commit by default. Scheduled or manual

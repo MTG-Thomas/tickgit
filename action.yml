@@ -32,19 +32,48 @@ inputs:
 runs:
   using: composite
   steps:
-    - name: Set up Go
-      uses: actions/setup-go@v6
-      with:
-        go-version: stable
-        cache: false
-
-    - name: Build tickgit
+    - name: Install verified tickgit release
+      id: install
       shell: bash
       run: |
         set -euo pipefail
         mkdir -p "$RUNNER_TEMP/tickgit-action"
-        cd "$GITHUB_ACTION_PATH"
-        go build -o "$RUNNER_TEMP/tickgit-action/tickgit" ./cmd/tickgit
+        case "${RUNNER_OS}-${RUNNER_ARCH}" in
+          Linux-X64)
+            asset="tickgit_linux_amd64.tar.gz"
+            checksum="047c9fd3d2d12025b1e583c69de26217a60f9ed5f721d991873862457d901c9f"
+            ;;
+          Linux-ARM64)
+            asset="tickgit_linux_arm64.tar.gz"
+            checksum="79f570d39f9d7baff154b6d5ad56e0e0d7d912da504841f02c84cdf5d04a731f"
+            ;;
+          macOS-X64)
+            asset="tickgit_darwin_amd64.tar.gz"
+            checksum="3d4a569c151f9c042daf5f09d23f87c63d125513400e27f4bd221098cf35710d"
+            ;;
+          macOS-ARM64)
+            asset="tickgit_darwin_arm64.tar.gz"
+            checksum="e1f8f749e9263b0ee533c0ff4809ae09eaf4ca15f9fddaba53c7ea2131a0c5fe"
+            ;;
+          Windows-X64)
+            asset="tickgit_windows_amd64.zip"
+            checksum="65fd66a18f744cdfab263b940b56c6e511bfef2866c3a0edb4389cadd41604ed"
+            ;;
+          *)
+            echo "Unsupported runner platform: ${RUNNER_OS}-${RUNNER_ARCH}" >&2
+            exit 1
+            ;;
+        esac
+        archive="$RUNNER_TEMP/tickgit-action/$asset"
+        curl -fsSL "https://github.com/MTG-Thomas/tickgit/releases/download/v0.0.18/$asset" -o "$archive"
+        echo "$checksum  $archive" | sha256sum --check -
+        tar -xf "$archive" -C "$RUNNER_TEMP/tickgit-action"
+        chmod +x "$RUNNER_TEMP/tickgit-action/tickgit" 2>/dev/null || true
+        binary="$RUNNER_TEMP/tickgit-action/tickgit"
+        if [[ "$RUNNER_OS" == "Windows" ]]; then
+          binary="$binary.exe"
+        fi
+        echo "bin=$binary" >> "$GITHUB_OUTPUT"
 
     - name: Run tickgit baseline check
       shell: bash
@@ -81,4 +110,4 @@ runs:
         if [[ -n "${{ inputs.ignore-paths }}" ]]; then
           args+=("--ignore-path" "${{ inputs.ignore-paths }}")
         fi
-        "$RUNNER_TEMP/tickgit-action/tickgit" "${args[@]}" "${{ inputs.path }}"
+        "${{ steps.install.outputs.bin }}" "${args[@]}" "${{ inputs.path }}"
