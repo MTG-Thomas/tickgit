@@ -28,6 +28,7 @@ var contextLines int
 var matchPhrases []string
 var blameWarningWriter io.Writer = os.Stderr
 var ignorePaths []string
+var includePathFile string
 var colorMode string
 
 func init() {
@@ -37,6 +38,7 @@ func init() {
 	todosCmd.Flags().IntVar(&contextLines, "context-lines", 0, "number of source lines to show before and after each TODO in human-readable output")
 	todosCmd.Flags().StringSliceVar(&matchPhrases, "match-phrase", nil, "phrase to match as latent work; repeat or comma-separate to override defaults")
 	todosCmd.Flags().StringSliceVar(&ignorePaths, "ignore-path", nil, "path pattern to ignore while scanning; repeat or comma-separate")
+	todosCmd.Flags().StringVar(&includePathFile, "include-path-file", "", "scan only repository-relative files listed one per line")
 	todosCmd.Flags().StringVar(&colorMode, "color", "auto", "colorize human-readable output: auto, always, never")
 	statsCmd.Flags().StringSliceVar(&matchPhrases, "match-phrase", nil, "phrase to match as latent work; repeat or comma-separate to override defaults")
 	statsCmd.Flags().StringSliceVar(&ignorePaths, "ignore-path", nil, "path pattern to ignore while scanning; repeat or comma-separate")
@@ -99,8 +101,15 @@ var todosCmd = &cobra.Command{
 func findToDos(ctx context.Context, dir string, s *spinner.Spinner) (todos.ToDos, error) {
 	foundToDos := make(todos.ToDos, 0)
 	phrases := selectedMatchPhrases()
-	searchOptions := comments.SearchOptions{IgnorePatterns: selectedIgnorePatterns()}
-	err := comments.SearchDirWithOptions(dir, searchOptions, func(comment *comments.Comment) {
+	includePaths, err := readIncludePaths(includePathFile)
+	if err != nil {
+		return nil, err
+	}
+	searchOptions := comments.SearchOptions{
+		IgnorePatterns: selectedIgnorePatterns(),
+		IncludePaths:   includePaths,
+	}
+	err = comments.SearchDirWithOptions(dir, searchOptions, func(comment *comments.Comment) {
 		todo := todos.NewToDoWithPhrases(*comment, phrases)
 		if todo != nil {
 			foundToDos = append(foundToDos, todo)
@@ -129,6 +138,24 @@ func findToDos(ctx context.Context, dir string, s *spinner.Spinner) (todos.ToDos
 	}
 
 	return foundToDos, nil
+}
+
+func readIncludePaths(path string) ([]string, error) {
+	if strings.TrimSpace(path) == "" {
+		return nil, nil
+	}
+	content, err := os.ReadFile(path)
+	if err != nil {
+		return nil, fmt.Errorf("read include path file: %w", err)
+	}
+	var paths []string
+	for _, line := range strings.Split(string(content), "\n") {
+		line = strings.TrimSpace(strings.TrimSuffix(line, "\r"))
+		if line != "" {
+			paths = append(paths, line)
+		}
+	}
+	return paths, nil
 }
 
 func writeBlameLookupWarnings(w io.Writer, failures todos.BlameLookupFailures) error {

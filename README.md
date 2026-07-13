@@ -176,6 +176,11 @@ rolling the Action out across repositories. The Action builds tickgit from the
 pinned Action ref and exits with status 2 when new findings appear relative to
 the baseline.
 
+For pull requests and pushes, the Action scans only added, copied, modified,
+or renamed files from the event base commit by default. Scheduled or manual
+runs without a base commit retain the full-repository scan. Set
+`changed-only: "false"` to force a full scan, or pass `base-sha` explicitly.
+
 ### API
 
 To find information about using the tickgit API, see [this file](https://github.com/MTG-Thomas/tickgit/blob/main/docs/API.md).

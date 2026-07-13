@@ -21,6 +21,14 @@ inputs:
     description: Comma-separated path patterns to ignore in addition to tickgit defaults.
     required: false
     default: ""
+  changed-only:
+    description: On pull requests and pushes, scan only files changed from the event base commit.
+    required: false
+    default: "true"
+  base-sha:
+    description: Optional explicit base commit for changed-only scanning.
+    required: false
+    default: ""
 runs:
   using: composite
   steps:
@@ -44,6 +52,26 @@ runs:
         set -euo pipefail
         cd "$GITHUB_WORKSPACE"
         args=("--csv-output" "--baseline-file" "${{ inputs.baseline-file }}")
+        base_sha="${{ inputs.base-sha }}"
+        if [[ -z "$base_sha" ]]; then
+          base_sha="${{ github.event.pull_request.base.sha }}"
+        fi
+        if [[ -z "$base_sha" || "$base_sha" =~ ^0+$ ]]; then
+          base_sha="${{ github.event.before }}"
+        fi
+        if [[ "${{ inputs.changed-only }}" == "true" && -n "$base_sha" && ! "$base_sha" =~ ^0+$ ]]; then
+          if ! git cat-file -e "${base_sha}^{commit}" 2>/dev/null; then
+            git fetch --no-tags --depth=1 origin "$base_sha"
+          fi
+          include_file="$RUNNER_TEMP/tickgit-action/changed-files.txt"
+          git diff --name-only --diff-filter=ACMR "$base_sha...HEAD" -- "${{ inputs.path }}" > "$include_file"
+          if [[ ! -s "$include_file" ]]; then
+            echo "tickgit diff check: no changed files to scan"
+            exit 0
+          fi
+          args+=("--include-path-file" "$include_file")
+          echo "tickgit diff check: scanning $(wc -l < "$include_file") changed file(s)"
+        fi
         if [[ "${{ inputs.fail-on-new }}" == "true" ]]; then
           args+=("--fail-on-new")
         fi

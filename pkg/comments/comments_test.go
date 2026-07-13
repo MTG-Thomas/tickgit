@@ -294,3 +294,24 @@ func TestHaskellFiles(t *testing.T) {
 		t.Fail()
 	}
 }
+
+func TestSearchDirUsesExactIncludePaths(t *testing.T) {
+	dir := t.TempDir()
+	writeTestFile(t, dir, "src", "changed.md", "# NOTE scan changed file\n")
+	writeTestFile(t, dir, "src", "unchanged.md", "# NOTE skip unchanged file\n")
+
+	var found Comments
+	err := SearchDirWithOptions(dir, SearchOptions{IncludePaths: []string{"src/changed.md"}}, func(comment *Comment) {
+		found = append(found, comment)
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if len(found) != 1 {
+		t.Fatalf("expected one included-file comment, got %d from files %v", len(found), commentFilePaths(found))
+	}
+	if got, want := filepath.ToSlash(found[0].FilePath), "src/changed.md"; got != want {
+		t.Fatalf("expected %q, got %q", want, got)
+	}
+}
